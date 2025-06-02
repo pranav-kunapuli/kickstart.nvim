@@ -2,7 +2,7 @@ return {
   {
     'yetone/avante.nvim',
     event = 'VeryLazy',
-    version = false, -- Set this to "*" to always pull the latest release version, or set it to false to update to the latest code changes.
+    version = false,
     opts = {
       ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
       provider = 'claude', -- The provider used in Aider mode or in the planning phase of Cursor Planning Mode
@@ -13,9 +13,9 @@ return {
       cursor_applying_provider = nil, -- The provider used in the applying phase of Cursor Planning Mode, defaults to nil, when nil uses Config.provider as the provider for the applying phase
       claude = {
         endpoint = 'https://api.anthropic.com',
-        model = 'claude-3-5-sonnet-20241022',
+        model = 'claude-sonnet-4-20250514',
         temperature = 0,
-        max_tokens = 4096,
+        max_tokens = 8192,
       },
       -- NOTE: OpenAPI example from README
       -- provider = 'openai',
