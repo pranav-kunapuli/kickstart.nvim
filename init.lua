@@ -164,6 +164,9 @@ vim.opt.relativenumber = true
 
 -- NOTE: Pranav's custom mappings
 
+vim.keymap.set('n', 'j', 'gj', { desc = 'Move down' })
+vim.keymap.set('n', 'k', 'gk', { desc = 'Move up' })
+
 -- Swap semicolon and colon for ease of use
 vim.keymap.set({ 'n', 'v' }, ':', ';', { desc = 'Replace colon with semicolon' })
 vim.keymap.set({ 'n', 'v' }, ';', ':', { desc = 'Replace semicolon with colon' })
@@ -405,13 +408,29 @@ require('lazy').setup({
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
-        --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          file_ignore_patterns = {},
+          hidden = true,
+          -- respect .gitignore
+          vimgrep_arguments = {
+            'rg',
+            '--color=never',
+            '--no-heading',
+            '--with-filename',
+            '--line-number',
+            '--column',
+            '--smart-case',
+            '--hidden',
+            '--glob=!.git/',
+          },
+        },
+        pickers = {
+          find_files = {
+            hidden = true,
+            -- respect .gitignore
+            find_command = { 'rg', '--files', '--hidden', '--glob', '!**/.git/*' },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -724,6 +743,8 @@ require('lazy').setup({
           settings = {
             python = {
               analysis = {
+                disbleOrganizeImports = true, -- Handled by ruff
+                typeCheckingMode = 'basic',
                 -- Automatically add import search paths
                 autoSearchPaths = true,
                 -- Use library implementations for type information
@@ -734,7 +755,14 @@ require('lazy').setup({
             },
           },
         },
+        cucumber_language_server = {},
       }
+
+      -- Set .feature files to use cucumber filetype
+      vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+        pattern = '*.feature',
+        command = 'set filetype=cucumber',
+      })
 
       -- Ensure the servers and tools above are installed
       --
@@ -804,6 +832,16 @@ require('lazy').setup({
           lsp_format = lsp_format_opt,
         }
       end,
+      formatters = {
+        gherkins = {
+          command = 'reformat-gherkin',
+          args = { '$FILENAME' },
+          stdin = false,
+          condition = function(self, ctx)
+            return vim.fs.basename(ctx.filename) ~= '.feature'
+          end,
+        },
+      },
       formatters_by_ft = {
         lua = { 'stylua' },
         python = { 'ruff_fix', 'ruff_format', 'ruff_organize_imports' },
