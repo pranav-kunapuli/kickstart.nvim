@@ -692,7 +692,6 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -718,43 +717,16 @@ require('lazy').setup({
           },
         },
         ruff = {},
-        pyright = {
-          -- Function that runs before the LSP server initializes
-          before_init = function(_, config)
-            local util = require 'lspconfig.util'
-            -- Determine the Python project root by looking for common Python project files
-            -- NOTE: This variable is currently unused but could be used to set workspaceRoot
-            local py_root = util.root_pattern('.git', 'setup.py', 'setup.cfg', 'pyproject.toml', 'requirements.txt')(config.root_dir)
-
-            -- Get the Python interpreter path from pyenv and remove trailing newline
-            local python_path = vim.fn.system('pyenv which python'):gsub('\n', '')
-
-            -- If the detected Python path is executable, configure pyright to use it
-            if vim.fn.executable(python_path) == 1 then
-              config.settings.python.pythonPath = python_path
-
-              -- Set the workspace root if py_root was found
-              if py_root then
-                config.settings.python.workspaceRoot = py_root
-              end
-            end
-          end,
-          -- Configure pyright's analysis settings
+        basedpyright = {
           settings = {
-            python = {
+            basedpyright = {
               analysis = {
-                disbleOrganizeImports = true, -- Handled by ruff
-                typeCheckingMode = 'basic',
-                -- Automatically add import search paths
-                autoSearchPaths = true,
-                -- Use library implementations for type information
                 useLibraryCodeForTypes = true,
-                -- Analyze all files in the workspace, not just open files
-                diagnosticMode = 'workspace',
               },
             },
           },
         },
+        mypy = {},
         cucumber_language_server = {},
       }
 
