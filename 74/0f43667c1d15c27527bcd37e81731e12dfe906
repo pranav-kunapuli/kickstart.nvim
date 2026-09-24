@@ -1,0 +1,21 @@
+init.lua
+  s_67cc33db40896c::t_aae255bd2a44f5 161
+lua/custom/plugins/colorscheme.lua
+  s_67cc33db40896c::t_32b4bf1ac15b0b 1-30,44-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "740f43667c1d15c27527bcd37e81731e12dfe906",
+  "prompts": {},
+  "sessions": {
+    "s_67cc33db40896c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2655f768-1070-4f4e-a284-fd92cdd3d0f5",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "pranav-kunapuli <pranav@awardedsoftware.com>"
+    }
+  }
+}
