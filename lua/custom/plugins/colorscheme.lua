@@ -1,10 +1,35 @@
+-- Colorscheme. Light/dark is driven by the `theme` command (~/.local/bin/theme),
+-- which keeps Ghostty, herdr, hunk and Neovim in step. See ~/.config/terminal-theme/mode.
+local state_file = vim.fn.expand '~/.config/terminal-theme/mode'
+
+--- Read the mode written by the `theme` command: 'dark', 'light' or 'auto'.
+local function theme_mode()
+  local f = io.open(state_file, 'r')
+  if not f then
+    return 'auto'
+  end
+  local mode = f:read 'l'
+  f:close()
+  mode = (mode or ''):gsub('%s', '')
+  if mode == 'dark' or mode == 'light' or mode == 'auto' then
+    return mode
+  end
+  return 'auto'
+end
+
+--- The background this session should be using right now.
+local function desired_background()
+  local mode = theme_mode()
+  if mode == 'auto' then
+    -- Ghostty owns light/dark in auto mode; Neovim already detects the terminal
+    -- background over OSC 11, so whatever it worked out is authoritative.
+    return vim.o.background
+  end
+  return mode
+end
+
 return {
   {
-    -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'rebelot/kanagawa.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
@@ -16,16 +41,27 @@ return {
         },
       }
 
-      -- Load the colorscheme here.
-      vim.cmd.colorscheme 'kanagawa-wave'
+      -- Re-apply the colorscheme for the current mode. kanagawa picks wave or
+      -- lotus off vim.o.background at load time, so set background first.
+      local function sync()
+        local bg = desired_background()
+        if vim.o.background ~= bg then
+          vim.o.background = bg
+        end
+        vim.cmd.colorscheme 'kanagawa'
+      end
+
+      sync()
+
+      -- Pick up a `theme` run without restarting: focusing this window resyncs.
+      vim.api.nvim_create_autocmd('FocusGained', {
+        desc = 'Resync colorscheme with the `theme` command',
+        callback = sync,
+      })
+
+      vim.api.nvim_create_user_command('ThemeSync', sync, {
+        desc = 'Resync the colorscheme with the `theme` command',
+      })
     end,
   },
-  -- {
-  --   'f-person/auto-dark-mode.nvim',
-  --   opts = {
-  --     -- your configuration comes here
-  --     -- or leave it empty to use the default settings
-  --     -- refer to the configuration section below
-  --   },
-  -- },
 }

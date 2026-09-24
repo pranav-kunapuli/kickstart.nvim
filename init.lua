@@ -158,6 +158,7 @@ vim.opt.scrolloff = 10
 
 -- NOTE: Pranav's settings
 vim.opt.relativenumber = true
+vim.opt.termguicolors = true
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
