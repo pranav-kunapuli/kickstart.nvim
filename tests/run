@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Run the review.nvim test suite.
+#   tests/run            all specs
+#   tests/run anchor     just tests/review/anchor_spec.lua
+#
+# Single-spec runs execute in-process; PlenaryBustedFile would spawn a child
+# with a bare init that has neither diffview nor plenary on the runtimepath.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+if [ $# -gt 0 ]; then
+  exec nvim --headless -u tests/minimal_init.lua \
+    -c "lua require('plenary.busted').run(vim.fn.fnamemodify('tests/review/$1_spec.lua', ':p'))"
+fi
+exec nvim --headless -u tests/minimal_init.lua \
+  -c "PlenaryBustedDirectory tests/review { minimal_init = 'tests/minimal_init.lua', timeout = 300000 }"
