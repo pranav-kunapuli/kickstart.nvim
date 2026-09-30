@@ -3,6 +3,9 @@ local config = require("review.config")
 local M = {}
 
 M.ns = vim.api.nvim_create_namespace("review")
+--- Gutter signs for the lines after a range's first. Kept apart from M.ns so
+--- each comment still owns exactly one anchor extmark.
+M.fill_ns = vim.api.nvim_create_namespace("review_fill")
 --- bufnr -> comment id -> extmark id. Extmarks track edits made inside nvim,
 --- which the stored line numbers cannot.
 M.marks = {}
@@ -30,6 +33,7 @@ end
 function M.paint(bufnr, comments)
   if not vim.api.nvim_buf_is_valid(bufnr) then return end
   vim.api.nvim_buf_clear_namespace(bufnr, M.ns, 0, -1)
+  vim.api.nvim_buf_clear_namespace(bufnr, M.fill_ns, 0, -1)
   M.marks[bufnr] = {}
   local total = vim.api.nvim_buf_line_count(bufnr)
   for _, c in ipairs(comments) do
@@ -49,12 +53,20 @@ function M.paint(bufnr, comments)
     end
     local ok, id = pcall(vim.api.nvim_buf_set_extmark, bufnr, M.ns, s - 1, 0, opts)
     if ok then M.marks[bufnr][c.id] = id end
+    for row = s, e - 1 do
+      pcall(vim.api.nvim_buf_set_extmark, bufnr, M.fill_ns, row, 0, {
+        sign_text = sign,
+        sign_hl_group = hl,
+        priority = 200,
+      })
+    end
   end
 end
 
 function M.clear(bufnr)
   if vim.api.nvim_buf_is_valid(bufnr) then
     vim.api.nvim_buf_clear_namespace(bufnr, M.ns, 0, -1)
+    vim.api.nvim_buf_clear_namespace(bufnr, M.fill_ns, 0, -1)
   end
   M.marks[bufnr] = nil
 end
