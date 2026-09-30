@@ -15,11 +15,8 @@ local function float(opts)
   }, opts))
 end
 
---- Snacks' `ft` starts treesitter unconditionally, bypassing the markdown
---- disable in init.lua, and the pinned nvim-treesitter master's markdown
---- injection directives throw on nvim 0.12. Regex syntax sidesteps both.
-local function markdown_bo(bo)
-  return vim.tbl_extend("force", { buftype = "nofile", bufhidden = "wipe", syntax = "markdown" }, bo or {})
+local function scratch_bo(bo)
+  return vim.tbl_extend("force", { buftype = "nofile", bufhidden = "wipe" }, bo or {})
 end
 
 --- Compose a comment. `<Tab>` cycles the tag in the title so the whole flow is
@@ -38,7 +35,8 @@ function M.compose(opts, on_submit)
   local win
   win = float({
     title = title(),
-    bo = markdown_bo(),
+    ft = "markdown",
+    bo = scratch_bo(),
     wo = { cursorline = true },
     text = opts.text or { "" },
     keys = {
@@ -123,7 +121,8 @@ function M.thread(c, actions)
     footer = " " .. table.concat(hints, "  ") .. "  q close ",
     footer_pos = "center",
     height = math.min(20, #thread_lines(c) + 2),
-    bo = markdown_bo({ modifiable = false }),
+    ft = "markdown",
+    bo = scratch_bo({ modifiable = false }),
     text = thread_lines(c),
     keys = keys,
   })
