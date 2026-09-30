@@ -1,26 +1,5 @@
-return {
-  {
-    'nvim-treesitter/nvim-treesitter',
-    opts = function(_, opts)
-      -- Configure embedded_template parser for EJS files
-      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
-      parser_config.embedded_template = {
-        install_info = {
-          url = 'https://github.com/tree-sitter/tree-sitter-embedded-template',
-          files = { 'src/parser.c' },
-          requires_generate_from_grammar = true,
-        },
-        filetype = 'embedded_template',
-        used_by = { 'ejs' },
-      }
+-- EJS files use the embedded_template parser, which nvim-treesitter installs
+-- from its own parser list (see the treesitter spec in init.lua).
+vim.filetype.add { extension = { ejs = 'embedded_template' } }
 
-      -- Set up filetype detection for .ejs files
-      vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
-        pattern = '*.ejs',
-        callback = function()
-          vim.bo.filetype = 'embedded_template'
-        end,
-      })
-    end,
-  },
-}
+return {}
