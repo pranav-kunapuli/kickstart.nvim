@@ -146,6 +146,18 @@ describe("integration", function()
       assert.is_not_nil(marks[1][4].sign_text)
     end)
 
+    it("signs every line of the range in the gutter", function()
+      local _, bufnr = seed({ 6, 8 })
+      local fill = vim.api.nvim_buf_get_extmarks(bufnr, render.fill_ns, 0, -1, { details = true })
+      local rows = vim.tbl_map(function(m) return m[2] end, fill)
+      assert.same({ 6, 7 }, rows)
+      local anchor = vim.api.nvim_buf_get_extmarks(bufnr, render.ns, 0, -1, { details = true })[1]
+      for _, m in ipairs(fill) do
+        assert.equals(anchor[4].sign_text, m[4].sign_text)
+        assert.equals(anchor[4].sign_hl_group, m[4].sign_hl_group)
+      end
+    end)
+
     it("defaults to the cursor line when given no range", function()
       local v = open_diff(root)
       local bufnr = v.cur_entry.layout.b.file.bufnr
