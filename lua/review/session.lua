@@ -342,7 +342,17 @@ function M.add(range)
     s.snapshot = snapshot(s.store)
     M.paint_buf(s, bufnr)
     M.publish(s)
-  end)
+  end, { win = vim.api.nvim_get_current_win(), line_start = line_start, line_end = line_end })
+end
+
+--- The window and live line range a comment's UI should sit next to.
+local function anchor_for(bufnr, c)
+  local ls, le = render.pos(bufnr, c.id)
+  return {
+    win = vim.api.nvim_get_current_win(),
+    line_start = ls or c.line_start,
+    line_end = le or c.line_end or c.line_start,
+  }
 end
 
 function M.at_cursor(s)
@@ -389,7 +399,7 @@ function M.reply()
     end)
     s.snapshot = snapshot(s.store)
     M.repaint(s)
-  end)
+  end, anchor_for(vim.api.nvim_get_current_buf(), c))
 end
 
 function M.delete()
@@ -419,7 +429,7 @@ function M.show()
     r = { name = "resolve", fn = M.toggle_resolved },
     a = { name = "reply", fn = M.reply },
     d = { name = "delete", fn = M.delete },
-  })
+  }, anchor_for(vim.api.nvim_get_current_buf(), c))
 end
 
 function M.list()
