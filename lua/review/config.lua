@@ -19,6 +19,9 @@ M.opts = {
   search_radius = 400,
   loose_min_chars = 4,
   virt_text = true,
+  --- Hides the comment window to look at the code behind it; press again
+  --- from the diff to bring the draft back.
+  peek_key = "<C-p>",
 }
 
 function M.setup_hl()
