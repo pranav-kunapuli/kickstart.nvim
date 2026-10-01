@@ -557,7 +557,12 @@ require('lazy').setup({
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          --  Inside a diffview tab, review.nav keeps the jump in the diff layout.
+          map('gd', function()
+            if not require('review.nav').definition() then
+              require('telescope.builtin').lsp_definitions()
+            end
+          end, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')

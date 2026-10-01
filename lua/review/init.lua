@@ -1,5 +1,6 @@
 local config = require("review.config")
 local dv = require("review.dv")
+local nav = require("review.nav")
 local registry = require("review.registry")
 local session = require("review.session")
 local util = require("review.util")
@@ -27,6 +28,8 @@ local function attach_keys(bufnr)
   map(bufnr, "n", "[r", function() session.jump(-1, false) end, "prev comment")
   map(bufnr, "n", "]R", function() session.jump(1, true) end, "next unresolved")
   map(bufnr, "n", "[R", function() session.jump(-1, true) end, "prev unresolved")
+
+  map(bufnr, "n", "<C-t>", nav.back, "back from definition")
 
   map(bufnr, "n", "<leader>rc", function() session.add(nil) end, "comment")
   map(bufnr, "x", "<leader>rc", function()
