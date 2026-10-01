@@ -1,0 +1,19 @@
+init.lua
+  s_542196db311f58::t_3edbf6b17e15d0 366
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6243b711ff3e5e590b26a4ef047ab4ae09d9bd53",
+  "prompts": {},
+  "sessions": {
+    "s_542196db311f58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ee59e3c0-50eb-4734-9b1f-fd994be3133c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "pranav-kunapuli <pranav@awardedsoftware.com>"
+    }
+  }
+}
