@@ -339,6 +339,31 @@ describe("integration", function()
     end)
   end)
 
+  describe("editing", function()
+    it("replaces the body and tag of the comment under the cursor", function()
+      local v = open_diff(root)
+      local bufnr = v.cur_entry.layout.b.file.bufnr
+      vim.api.nvim_set_current_buf(bufnr)
+      local s = session.attach()
+      ui.compose = function(_, cb) cb("first draft", "fix") end
+      session.add({ 6, 6 })
+
+      local prefilled
+      ui.compose = function(opts, cb)
+        prefilled = opts.text
+        cb("second draft", "nit")
+      end
+      vim.api.nvim_win_set_cursor(0, { 6, 0 })
+      session.edit()
+
+      assert.same({ "first draft" }, prefilled)
+      local c = s.store:comments()[1]
+      assert.equals("second draft", c.body)
+      assert.equals("nit", c.tag)
+      assert.equals(1, #s.store:comments())
+    end)
+  end)
+
   describe("listing", function()
     it("switches diffview to a file that is not on screen to reach its comment", function()
       write(root .. "/other.py", "a = 1\nb = 2\nc = 3\n")

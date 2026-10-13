@@ -403,6 +403,28 @@ function M.reply()
   end, anchor_for(vim.api.nvim_get_current_buf(), c))
 end
 
+function M.edit()
+  local s = M.get()
+  if not s then return end
+  local c = M.at_cursor(s)
+  if not c then
+    util.notify("no comment under the cursor")
+    return
+  end
+  ui.compose({
+    where = "edit [" .. (c.tag or "q") .. "]",
+    tag = c.tag,
+    text = vim.split(c.body or "", "\n", { plain = true }),
+  }, function(body, tag)
+    s.store:update(c.id, function(x)
+      x.body = body
+      x.tag = tag
+    end)
+    s.snapshot = snapshot(s.store)
+    M.repaint(s)
+  end, anchor_for(vim.api.nvim_get_current_buf(), c))
+end
+
 function M.delete()
   local s = M.get()
   if not s then return end
@@ -429,6 +451,7 @@ function M.show()
   ui.thread(c, {
     r = { name = "resolve", fn = M.toggle_resolved },
     a = { name = "reply", fn = M.reply },
+    e = { name = "edit", fn = M.edit },
     d = { name = "delete", fn = M.delete },
   }, anchor_for(vim.api.nvim_get_current_buf(), c))
 end
