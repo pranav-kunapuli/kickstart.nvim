@@ -1,0 +1,23 @@
+lua/review/init.lua
+  s_918b66be20be3b::t_3b73c2bf4bd20a 44,146
+lua/review/session.lua
+  s_918b66be20be3b::t_3c53addf1e45f4 406-427,454
+tests/review/integration_spec.lua
+  s_918b66be20be3b::t_e1417d6bfa23a3 342-366
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "495a539aa09317347e4b3a23b1ba00730cd0e480",
+  "prompts": {},
+  "sessions": {
+    "s_918b66be20be3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4d068cc6-5037-477b-93db-ea6f77ff9549",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "pranav-kunapuli <pranav@awardedsoftware.com>"
+    }
+  }
+}
