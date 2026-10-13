@@ -339,6 +339,30 @@ describe("integration", function()
     end)
   end)
 
+  describe("listing", function()
+    it("switches diffview to a file that is not on screen to reach its comment", function()
+      write(root .. "/other.py", "a = 1\nb = 2\nc = 3\n")
+      sh(root, "git add other.py && git -c user.email=t@t -c user.name=t commit -qm three")
+      write(root .. "/other.py", "a = 1\nb = 20\nc = 3\n")
+      local v = open_diff(root)
+      local target = v.cur_entry.path == "award.py" and "other.py" or "award.py"
+      local s = session.attach()
+      s.store:add({
+        file = target, side = "new", line_start = 2, line_end = 2,
+        snippet = "", tag = "fix", body = "look here", author = "human", status = "open",
+      })
+
+      session.goto_comment(s, s.store:comments()[1])
+
+      local landed = vim.wait(5000, function()
+        local loc = dv.locate(vim.api.nvim_get_current_buf())
+        return loc ~= nil and loc.path == target and loc.side == "new"
+          and vim.api.nvim_win_get_cursor(0)[1] == 2
+      end, 20)
+      assert.is_true(landed, "never landed on " .. target .. ":2")
+    end)
+  end)
+
   describe("export", function()
     it("copies the open comments and the store pointer to the + register", function()
       local v = open_diff(root)

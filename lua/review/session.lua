@@ -3,6 +3,7 @@ local anchor = require("review.anchor")
 local config = require("review.config")
 local dv = require("review.dv")
 local export = require("review.export")
+local nav = require("review.nav")
 local registry = require("review.registry")
 local render = require("review.render")
 local ui = require("review.ui")
@@ -443,20 +444,41 @@ function M.list()
   end)
 end
 
-function M.goto_comment(s, c)
+local function focus_comment(s, c)
   for bufnr, loc in pairs(s.bufs) do
     if loc.path == c.file and loc.side == (c.side or "new") and vim.api.nvim_buf_is_valid(bufnr)
       and (not loc.frozen or loc.rev == c.rev) then
       local win = vim.fn.bufwinid(bufnr)
       if win ~= -1 then
         vim.api.nvim_set_current_win(win)
-        pcall(vim.api.nvim_win_set_cursor, win, { c.line_start or 1, 0 })
+        local ls = render.pos(bufnr, c.id) or c.line_start or 1
+        pcall(vim.api.nvim_win_set_cursor, win, { ls, 0 })
         vim.cmd("normal! zz")
-        return
+        return true
       end
     end
   end
-  util.notify(("%s is not open in this tab — select it in the file panel"):format(c.file))
+  return false
+end
+
+function M.goto_comment(s, c)
+  if focus_comment(s, c) then return end
+  -- The buffer-enter autocmd paints the new file on a later tick, so paint it
+  -- here to register its buffers before looking for the comment.
+  local found = nav.open(c.file, function()
+    local v = dv.view()
+    local layout = v and v.cur_entry and v.cur_entry.layout
+    for _, side in ipairs({ "a", "b" }) do
+      local f = layout and layout[side] and layout[side].file
+      if f and f.bufnr and vim.api.nvim_buf_is_valid(f.bufnr) then M.paint_buf(s, f.bufnr) end
+    end
+    if not focus_comment(s, c) then
+      util.notify(("%s is open, but not on the side or commit this comment was left on"):format(c.file))
+    end
+  end)
+  if not found then
+    util.notify(("%s is not part of this diff"):format(c.file), vim.log.levels.WARN)
+  end
 end
 
 ---------------------------------------------------------------------------
