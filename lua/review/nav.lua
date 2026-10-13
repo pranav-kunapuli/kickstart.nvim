@@ -41,9 +41,14 @@ end
 
 --- set_file is async and returns before the new buffers are in their windows,
 --- so wait for the entry to land before moving the cursor.
-local function show_entry(view, entry, line, col)
+--- `on_ready` replaces the cursor placement when the caller needs a window
+--- other than the new side.
+local function show_entry(view, entry, line, col, on_ready)
+  local function land(window)
+    if on_ready then on_ready() else place_cursor(window, line, col) end
+  end
   if view.cur_entry == entry then
-    place_cursor(view.cur_layout:get_main_win().id, line, col)
+    land(view.cur_layout:get_main_win().id)
     return
   end
   view:set_file(entry, true, true)
@@ -54,7 +59,7 @@ local function show_entry(view, entry, line, col)
     if main and main.file and main.file.bufnr
         and vim.api.nvim_win_is_valid(main.id)
         and vim.api.nvim_win_get_buf(main.id) == main.file.bufnr then
-      place_cursor(main.id, line, col)
+      land(main.id)
     elseif vim.uv.now() < deadline then
       vim.defer_fn(poll, 20)
     else
@@ -108,6 +113,21 @@ function M.definition()
     end,
   })
   return true
+end
+
+--- Switch diffview to the changed file at `path` (repo-relative), then call
+--- `on_ready` once its buffers are in their windows.
+--- @return boolean found false when `path` is not one of the diff's files
+function M.open(path, on_ready)
+  local view = dv.view()
+  if not view then return false end
+  for _, entry in view.files:iter() do
+    if entry.path == path then
+      show_entry(view, entry, 1, 0, on_ready)
+      return true
+    end
+  end
+  return false
 end
 
 function M.back()
