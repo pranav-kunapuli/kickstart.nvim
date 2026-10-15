@@ -1,0 +1,29 @@
+lua/custom/plugins/mini.lua
+  s_5a1d71637fcd7a::t_d4622bd3e58ecc 32-34
+lua/review/herdr.lua
+  s_5a1d71637fcd7a::t_bc3f5a66acde1d 1-117
+lua/review/init.lua
+  s_5a1d71637fcd7a::t_faa902b59f57e3 48-49,152-164,211-212
+lua/review/session.lua
+  s_5a1d71637fcd7a::t_bee7a241a01c6a 570-633
+tests/review/herdr_spec.lua
+  s_5a1d71637fcd7a::t_716690db15dc23 1-117
+tests/review/integration_spec.lua
+  s_5a1d71637fcd7a::t_4b60c4ca957928 405-451
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d1560741d04e42b0cc98b165023838e17dcdef19",
+  "prompts": {},
+  "sessions": {
+    "s_5a1d71637fcd7a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "774a54fa-14af-4793-a363-948ec076f4d3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "pranav-kunapuli <pranav@awardedsoftware.com>"
+    }
+  }
+}
