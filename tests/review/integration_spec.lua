@@ -402,4 +402,51 @@ describe("integration", function()
       assert.is_true(reg:find(vim.fs.basename(s.store.path), 1, true) ~= nil)
     end)
   end)
+
+  describe("sending to an agent", function()
+    local herdr = require("review.herdr")
+    local real_dispatch = herdr.dispatch
+    local sent
+
+    before_each(function()
+      sent = {}
+      -- One agent rooted at the repo; record what would be typed into it.
+      herdr.dispatch = function(text, submit, on_done)
+        local agent = { pane_id = "w1:p1", kind = "claude", cwd = root }
+        sent[#sent + 1] = { text = type(text) == "function" and text(agent) or text, submit = submit }
+        if on_done then on_done(agent) end
+      end
+    end)
+
+    after_each(function() herdr.dispatch = real_dispatch end)
+
+    it("sends the export prompt, keeps the comments, and counts them on the statusline", function()
+      local v = open_diff(root)
+      vim.api.nvim_set_current_buf(v.cur_entry.layout.b.file.bufnr)
+      local s = session.attach()
+      ui.compose = function(_, cb) cb("N+1 here", "fix") end
+      session.add({ 6, 8 })
+      session.send(true)
+      assert.are.equal(1, #sent)
+      assert.is_true(sent[1].submit)
+      assert.is_true(sent[1].text:find("N+1 here", 1, true) ~= nil)
+      assert.is_true(sent[1].text:find(vim.fs.basename(s.store.path), 1, true) ~= nil)
+      assert.are.equal(1, (s.store:counts()))
+      assert.are.equal("● 1", require("review").statusline())
+    end)
+
+    it("references a new-side range relative to the agent's cwd", function()
+      local v = open_diff(root)
+      vim.api.nvim_set_current_buf(v.cur_entry.layout.b.file.bufnr)
+      session.ref({ 6, 8 })
+      assert.are.same({ text = "award.py:6-8 ", submit = false }, sent[1])
+    end)
+
+    it("says which revision an old-side reference is from", function()
+      local v = open_diff(root, "main")
+      vim.api.nvim_set_current_buf(v.cur_entry.layout.a.file.bufnr)
+      session.ref({ 4, 4 })
+      assert.is_true(sent[1].text:match("^award%.py:4 %(old side @ %x+%) $") ~= nil, sent[1].text)
+    end)
+  end)
 end)

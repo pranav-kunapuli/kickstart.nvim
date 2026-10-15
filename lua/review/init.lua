@@ -45,6 +45,8 @@ local function attach_keys(bufnr)
   map(bufnr, "n", "<leader>rd", session.delete, "delete comment")
   map(bufnr, "n", "<leader>rl", session.list, "list threads")
   map(bufnr, "n", "<leader>ry", session.export, "export to clipboard")
+  map(bufnr, "n", "<leader>rp", function() session.send(false) end, "paste comments into agent")
+  map(bufnr, "n", "<leader>rP", function() session.send(true) end, "send comments to agent")
   map(bufnr, "n", "<leader>rR", function()
     local s = session.get()
     if s then
@@ -147,6 +149,19 @@ function M.setup()
   command("ReviewDelete", session.delete)
   command("ReviewList", session.list)
   command("ReviewExport", session.export)
+  -- :ReviewSend types the prompt into the agent's input; :ReviewSend! submits it.
+  command("ReviewSend", function(a) session.send(a.bang) end, { bang = true })
+  -- Global, not diff-only: citing a line is useful outside a review too.
+  command("ReviewRef", function(a)
+    session.ref(a.range == 2 and { a.line1, a.line2 } or nil)
+  end, { range = true })
+  vim.keymap.set("n", "<leader>ri", function() session.ref(nil) end,
+    { desc = "review: reference line in agent", silent = true })
+  vim.keymap.set("x", "<leader>ri", function()
+    local range = visual_range()
+    vim.cmd("normal! \27")
+    session.ref(range)
+  end, { desc = "review: reference selection in agent", silent = true })
 
   command("ReviewRefresh", function()
     local s = session.get()
@@ -192,5 +207,7 @@ function M.setup()
     end)
   end)
 end
+
+M.statusline = session.statusline
 
 return M
