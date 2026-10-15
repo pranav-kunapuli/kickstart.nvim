@@ -567,4 +567,68 @@ function M.export()
   end
 end
 
+local function plural(n)
+  return ("%d open %s"):format(n, n == 1 and "comment" or "comments")
+end
+
+--- Same prompt as export, typed into the agent's input. `submit` presses
+--- Enter too. Comments stay in the store: the agent resolves them there.
+function M.send(submit)
+  local s = M.get()
+  if not s then
+    util.notify("no active review", vim.log.levels.WARN)
+    return
+  end
+  sync_lines(s)
+  s.store:reload()
+  local text = export.format(s.store)
+  if not text then
+    util.notify("no open comments to send")
+    return
+  end
+  local open = select(1, s.store:counts())
+  require("review.herdr").dispatch(text, submit, function(agent)
+    util.notify(("%s %s to %s"):format(submit and "sent" or "pasted", plural(open), agent.kind))
+  end)
+end
+
+--- Drop `path:12-20 ` at the agent's cursor so you can cite code mid-sentence.
+--- Never submits. Works in any buffer; in a diff the path comes from diffview,
+--- and an old-side line says which revision it is from.
+function M.ref(range)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local first, last
+  if range then
+    first, last = range[1], range[2]
+  else
+    first = vim.api.nvim_win_get_cursor(0)[1]
+    last = first
+  end
+
+  local file, suffix = vim.api.nvim_buf_get_name(bufnr), ""
+  local loc = dv.locate(bufnr)
+  local root = dv.repo_root()
+  if loc and root then
+    file = vim.fs.joinpath(root, loc.old_path or loc.path)
+    if loc.side == "old" then suffix = ("(old side @ %s) "):format(loc.rev or "base") end
+  end
+  if file == "" then
+    util.notify("this buffer has no file to reference", vim.log.levels.WARN)
+    return
+  end
+
+  local herdr = require("review.herdr")
+  herdr.dispatch(function(agent)
+    return herdr.location(file, first, last, agent.cwd) .. suffix
+  end, false)
+end
+
+--- `● 3` while the active review has open comments, else "".
+function M.statusline()
+  local s = M.current
+  if not s then return "" end
+  local open = select(1, s.store:counts())
+  return open > 0 and ("● " .. open) or ""
+end
+
 return M

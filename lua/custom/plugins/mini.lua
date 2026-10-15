@@ -29,7 +29,9 @@ return {
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_location = function()
-        return '%2l:%-2v'
+        local ok, review = pcall(require, 'review')
+        local pending = ok and review.statusline() or ''
+        return (pending ~= '' and pending .. ' ' or '') .. '%2l:%-2v'
       end
 
       -- ... and there is more!
